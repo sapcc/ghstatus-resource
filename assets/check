@@ -19,11 +19,16 @@ load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-uri=$(jq -r '.source.uri // ""' < $payload)
+owner=$(jq -r '.source.owner // ""' < $payload)
+repo=$(jq -r '.source.repo // ""' < $payload)
+base_repo_url=$(jq -r '.source.base_repo_url // "https://github.com"' < $payload)
+base_api_url=$(jq -r '.source.base_api_url // "https://api.github.com"' < $payload)
+github_access_token=$(jq -r '.source.access_token // ""' < $payload)
+context=$(jq -r '.source.context // "continuous-integration/travis-ci/push"' < $payload)
+uri=$base_repo_url/$owner/$repo.git
 branch=$(jq -r '.source.branch // ""' < $payload)
 paths="$(jq -r '(.source.paths // ["."])[]' < $payload)" # those "'s are important
 ignore_paths="$(jq -r '":!" + (.source.ignore_paths // [])[]' < $payload)" # these ones too
-tag_filter=$(jq -r '.source.tag_filter // ""' < $payload)
 git_config_payload=$(jq -r '.source.git_config // []' < $payload)
 ref=$(jq -r '.version.ref // ""' < $payload)
 skip_ci_disabled=$(jq -r '.source.disable_ci_skip // false' < $payload)
@@ -67,19 +72,15 @@ ci_skip=""
 if [ "$skip_ci_disabled" != "true" ]; then
   ci_skip="--grep \\[ci\\sskip\\] --grep \\[skip\\sci\\] --invert-grep"
 fi
-
-if [ -n "$tag_filter" ]; then
-  {
-    if [ -n "$ref" ]; then
-      git tag --list "$tag_filter" --sort=creatordate --contains $ref
-    else
-      git tag --list "$tag_filter" --sort=creatordate | tail -1
+{
+  set -f
+  for commit in $(git log --reverse $ci_skip --format='%H' --first-parent $log_range $paths_search); do
+    #echo $commit >&2
+    state=$(curlgh /repos/$owner/$repo/commits/$commit/status | jq -r ".statuses[] | select(.context == \"$context\" ) | .state")
+    if [ "$state" == "success" ]; then
+      echo $commit
+      break
     fi
-  } | jq -R '.' | jq -s "map({ref: .})" >&3
-else
-  {
-    set -f
-    git log $ci_skip --format='%H' --first-parent $log_range $paths_search
-    set +f
-  } | jq -R '.' | jq -s "map({ref: .})" >&3
-fi
+  done
+  set +f
+} | jq -R '.' | jq -s "map({ref: .})" >&3

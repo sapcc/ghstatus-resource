@@ -26,7 +26,11 @@ load_pubkey $payload
 configure_git_ssl_verification $payload
 configure_credentials $payload
 
-uri=$(jq -r '.source.uri // ""' < $payload)
+owner=$(jq -r '.source.owner // ""' < $payload)
+repo=$(jq -r '.source.repo // ""' < $payload)
+base_repo_url=$(jq -r '.source.base_repo_url // "https://github.com"' < $payload)
+base_api_url=$(jq -r '.source.base_api_url // "https://api.github.com"' < $payload)
+uri=$base_repo_url/$owner/$repo.git
 branch=$(jq -r '.source.branch // ""' < $payload)
 git_config_payload=$(jq -r '.source.git_config // []' < $payload)
 ref=$(jq -r '.version.ref // "HEAD"' < $payload)

@@ -117,3 +117,7 @@ configure_credentials() {
     echo "default login $username password $password" > $HOME/.netrc
   fi
 }
+
+curlgh () {
+  curl -s -H "Authorization: token $github_access_token" $base_api_url$@
+}

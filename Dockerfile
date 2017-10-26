@@ -180,8 +180,8 @@ RUN             rm -rf \
                     perl \
                     perl5
 
-FROM resource AS tests
-ADD test/ /tests
-RUN /tests/all.sh
+#FROM resource AS tests
+#ADD test/ /tests
+#RUN /tests/all.sh
 
-FROM resource
+#FROM resource

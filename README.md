@@ -1,11 +1,17 @@
 # Git Resource
 
-Tracks the commits in a [git](http://git-scm.com/) repository.
-
+Tracks the commits in a [github](http://github.com/) repository.
+It is a fork from the offical git-resource.
+It only emits commits that are in "success" state for the given context.
 
 ## Source Configuration
 
-* `uri`: *Required.* The location of the repository.
+* `owner`: *Required.* The owner of the repository (e.g. `sapcc`).
+* `repo`: *Required.* The repositry of the repository (e.g. `kubernikus`).
+* `access_token`: *Required.* A github access token that can read the commit status of the given repository
+* `base_repo_url`: The base url for the github repository. Default: `https://github.com`
+* `base_api_url`: The base url for the github API. Default: `https://api.github.com`
+* `context`: The status context to track: Default: `continuous-integration/travis-ci/push`
 
 * `branch`: The branch to track. This is *optional* if the resource is
    only used in `get` steps (default value in this case is `master`).
@@ -47,11 +53,6 @@ Tracks the commits in a [git](http://git-scm.com/) repository.
 
 * `skip_ssl_verification`: *Optional.* Skips git ssl verification by exporting
   `GIT_SSL_NO_VERIFY=true`.
-
-* `tag_filter`: *Optional.* If specified, the resource will only detect commits
-  that have a tag matching the expression that have been made against
-  the `branch`. Patterns are [glob(7)](http://man7.org/linux/man-pages/man7/glob.7.html)
-  compatible (as in, bash compatible).
 
 * `git_config`: *Optional.* If specified as (list of pairs `name` and `value`)
   it will configure git global options, setting each name with each value.
