@@ -1,4 +1,5 @@
 FROM alpine:edge AS resource
+LABEL source_repository="https://github.com/sapcc/ghstatus-resource"
 
 RUN apk --no-cache add \
   bash \
